@@ -3,5 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("한글도 잘 나오나?")
+	const name string = "jh"
+	fmt.Println(name)
+	myname := "jh" // var myname string = "jh" 같은 의미!
+	myname = "koh jh"
+	fmt.Println(myname)
 }
