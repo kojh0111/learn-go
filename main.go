@@ -3,11 +3,11 @@ package main
 import "fmt"
 
 func main() {
-	a := 2
-	b := &a
-	a = 10
-	fmt.Println(&a) // memory address
-	fmt.Println(*b) // see in memory
-	*b = 20
-	fmt.Println(a)
+	arr := [4]string{"1", "2", "3"}
+	fmt.Println(arr)
+	arr[3] = "5"
+	fmt.Println(arr)
+	names := []string{"jh", "sy", "js"}
+	names = append(names, "jy")
+	fmt.Println(names)
 }
