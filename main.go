@@ -6,14 +6,19 @@ import (
 )
 
 func main() {
-	go helloCount("jh")
-	go helloCount("koh")
-	time.Sleep(time.Second * 5)
+	c := make(chan bool)
+	people := [2]string{"jh", "koh"}
+	for _, person := range people {
+		go helloCount(person, c)
+	}
+	fmt.Println(<-c)
+	fmt.Println(<-c)
 }
 
-func helloCount(person string) {
+func helloCount(person string, c chan bool) {
 	for i := 0; i < 10; i++ {
-		fmt.Println("Hello", person, i)
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 5)
+		fmt.Println("Hello ", person)
+		c <- true
 	}
 }
