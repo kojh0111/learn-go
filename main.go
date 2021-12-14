@@ -14,7 +14,14 @@ var BaseURL string = "https://kr.indeed.com/jobs?q=python&limit=50"
 
 func main() {
 	totalPages := getPages()
-	fmt.Println(totalPages)
+	for i := 0; i <= totalPages; i++ {
+		getPage(i)
+	}
+}
+
+func getPage(page int) {
+	pageURL := BaseURL + "&start=" + strconv.Itoa(page*50)
+	fmt.Println("Requesting", pageURL)
 }
 
 func getPages() int {
