@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -11,7 +13,8 @@ import (
 var BaseURL string = "https://kr.indeed.com/jobs?q=python&limit=50"
 
 func main() {
-	fmt.Println(getPages())
+	totalPages := getPages()
+	fmt.Println(totalPages)
 }
 
 func getPages() int {
@@ -25,8 +28,11 @@ func getPages() int {
 	checkErr(err)
 	pages := 0
 
-	doc.Find(".pagination").Each(func(i int, s *goquery.Selection) {
-		pages = s.Find("a").Length()
+	doc.Find("#searchCountPages").Each(func(i int, s *goquery.Selection) {
+		countString := strings.Split(s.Text(), " 결과 ")
+		splitCount := strings.Replace(strings.Split(countString[len(countString)-1], "건")[0], ",", "", -1)
+		countJob, _ := strconv.Atoi(splitCount)
+		pages = countJob / 50
 	})
 
 	return pages
