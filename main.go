@@ -23,14 +23,18 @@ type extractedJob struct {
 var BaseURL string = "https://kr.indeed.com/jobs?q=python&limit=50"
 
 func main() {
+	var jobs []extractedJob
 	totalPages := getPages()
+	// for i := 0; i <= 1; i++ {
 	for i := 0; i <= totalPages; i++ {
-		getPage(i)
+		extractedJobs := getPage(i)
+		jobs = append(jobs, extractedJobs...)
 	}
-	// getPage(0)
+	fmt.Println(jobs)
 }
 
-func getPage(page int) {
+func getPage(page int) []extractedJob {
+	var jobs []extractedJob
 	pageURL := BaseURL + "&start=" + strconv.Itoa(page*50)
 	fmt.Println("Requesting", pageURL)
 	res, err := http.Get(pageURL)
@@ -44,21 +48,10 @@ func getPage(page int) {
 
 	searchCards := doc.Find(".tapItem")
 	searchCards.Each(func(i int, card *goquery.Selection) {
-		link, _ := card.Attr("href")
-		title := card.Find("h2 > span").Text()
-		company := card.Find(".companyName").Text()
-		location := card.Find(".companyLocation").Text()
-		salary := card.Find(".salary-snippet > span").Text()
-		summary := card.Find(".job-snippet").Text()
-		job := extractedJob{
-			link:     link,
-			title:    title,
-			company:  company,
-			location: location,
-			salary:   salary,
-			summary:  summary}
-		fmt.Println(job.link)
+		job := extractJob(card)
+		jobs = append(jobs, job)
 	})
+	return jobs
 }
 
 func getPages() int {
@@ -92,4 +85,21 @@ func checkRes(res *http.Response) {
 	if res.StatusCode != 200 {
 		log.Fatalln("Request failed with Status:", res.StatusCode)
 	}
+}
+
+func extractJob(card *goquery.Selection) extractedJob {
+	link, _ := card.Attr("href")
+	title := card.Find("h2 > span").Text()
+	company := card.Find(".companyName").Text()
+	location := card.Find(".companyLocation").Text()
+	salary := card.Find(".salary-snippet > span").Text()
+	summary := card.Find(".job-snippet").Text()
+	job := extractedJob{
+		link:     link,
+		title:    title,
+		company:  company,
+		location: location,
+		salary:   salary,
+		summary:  summary}
+	return job
 }
