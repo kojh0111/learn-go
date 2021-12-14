@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -30,7 +32,31 @@ func main() {
 		extractedJobs := getPage(i)
 		jobs = append(jobs, extractedJobs...)
 	}
-	fmt.Println(jobs)
+	writeJobs(jobs)
+	fmt.Println("Done, extracted", len(jobs))
+}
+
+func writeJobs(jobs []extractedJob) {
+	file, err := os.Create("jobs.csv")
+	checkErr(err)
+
+	w := csv.NewWriter(file)
+	w.Comma = '`'
+	defer w.Flush()
+
+	headers := []string{"Link", "Title", "Company", "Location", "Salary", "Summary"}
+
+	wErr := w.Write(headers)
+	checkErr(wErr)
+
+	utf8bom := []byte{0xEF, 0xBB, 0xBF}
+	file.Write(utf8bom)
+
+	for _, job := range jobs {
+		jobSlice := []string{"https://kr.indeed.com" + job.link, job.title, job.company, job.location, job.salary, job.summary}
+		jwErr := w.Write(jobSlice)
+		checkErr(jwErr)
+	}
 }
 
 func getPage(page int) []extractedJob {
@@ -87,13 +113,17 @@ func checkRes(res *http.Response) {
 	}
 }
 
+func cleanString(str string) string {
+	return strings.Join(strings.Fields(strings.TrimSpace(str)), " ")
+}
+
 func extractJob(card *goquery.Selection) extractedJob {
 	link, _ := card.Attr("href")
 	title := card.Find("h2 > span").Text()
 	company := card.Find(".companyName").Text()
 	location := card.Find(".companyLocation").Text()
 	salary := card.Find(".salary-snippet > span").Text()
-	summary := card.Find(".job-snippet").Text()
+	summary := cleanString(card.Find(".job-snippet").Text())
 	job := extractedJob{
 		link:     link,
 		title:    title,
