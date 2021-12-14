@@ -2,45 +2,44 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-type result struct {
-	url    string
-	status string
-}
+var BaseURL string = "https://kr.indeed.com/jobs?q=python&limit=50"
 
 func main() {
-	results := make(map[string]string)
-	c := make(chan result)
-	urls := []string{
-		"https://www.naver.com/",
-		"https://www.google.com/",
-		"https://www.amazon.com/",
-		"https://www.amazonfsdafsa.com/",
-		"https://www.reddit.com/",
-		"https://soundcloud.com/",
-		"https://www.facebook.com/",
-		"https://www.instagram.com/",
-	}
-	for _, url := range urls {
-		go hitURL(url, c)
-	}
-	for i := 0; i < len(urls); i++ {
-		res := <-c
-		results[res.url] = res.status
-	}
-	for url, status := range results {
-		fmt.Println(url, status)
-	}
-
+	fmt.Println(getPages())
 }
 
-func hitURL(url string, c chan<- result) {
-	resp, err := http.Get(url)
-	status := "OK"
-	if err != nil || (resp.StatusCode >= 400) {
-		status = "FAILED"
+func getPages() int {
+	res, err := http.Get(BaseURL)
+	checkErr(err)
+	checkRes(res)
+
+	defer res.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	checkErr(err)
+	pages := 0
+
+	doc.Find(".pagination").Each(func(i int, s *goquery.Selection) {
+		pages = s.Find("a").Length()
+	})
+
+	return pages
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Fatalln(err)
 	}
-	c <- result{url: url, status: status}
+}
+
+func checkRes(res *http.Response) {
+	if res.StatusCode != 200 {
+		log.Fatalln("Request failed with Status:", res.StatusCode)
+	}
 }
