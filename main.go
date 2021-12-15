@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/kojh0111/learngo/scraper"
 	"github.com/labstack/echo"
@@ -15,9 +16,11 @@ func handleHome(c echo.Context) error {
 }
 
 func handleScrape(c echo.Context) error {
+	defer os.Remove("jobs.csv")
 	term := strings.ToLower(scraper.CleanString(c.FormValue("term")))
-	fmt.Println(term)
-	return nil
+	t := time.Now()
+	scraper.Scrap(term)
+	return c.Attachment("jobs.csv", term+t.Format(time.ANSIC)+".csv")
 }
 
 func main() {
