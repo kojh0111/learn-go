@@ -81,11 +81,11 @@ func getPages(url string) int {
 
 func extractJob(card *goquery.Selection) extractedJob {
 	link, _ := card.Attr("href")
-	title := cleanString(card.Find("h2 > span").Text())
+	title := CleanString(card.Find("h2 > span").Text())
 	company := card.Find(".companyName").Text()
 	location := card.Find(".companyLocation").Text()
 	salary := card.Find(".salary-snippet > span").Text()
-	summary := cleanString(card.Find(".job-snippet").Text())
+	summary := CleanString(card.Find(".job-snippet").Text())
 	return extractedJob{
 		link:     link,
 		title:    title,
@@ -130,6 +130,7 @@ func checkRes(res *http.Response) {
 	}
 }
 
-func cleanString(str string) string {
+// CleanString cleans a string
+func CleanString(str string) string {
 	return strings.ReplaceAll(strings.Join(strings.Fields(strings.TrimSpace(str)), " "), "|", ",")
 }
